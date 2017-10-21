@@ -1,0 +1,124 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY processeur is
+	PORT ( 	DIN	:	IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+				resetn, clock, run : IN STD_LOGIC;
+				DONE	:	BUFFER STD_LOGIC;
+				busWires	:	BUFFER STD_LOGIC_VECTOR(15 DOWNTO 0)
+				); 
+END processeur;
+
+ARCHITECTURE Behavior OF processeur IS
+	COMPONENT fsm
+		PORT ( 
+			IR : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+			MUXin : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+			operate : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			sigSet : OUT STD_LOGIC_VECTOR(10 DOWNTO 0);			-- de 0 a 7 les registres Ri, en 8 le registre A, en 9 le registre G en 10 le registre IR 
+			clk, reset_n,	run:	in std_logic;
+			DONE	:	OUT STD_LOGIC
+			);
+	END COMPONENT;
+	
+	COMPONENT registre
+		generic (SIZE : INTEGER);
+		port( Rin	:	in std_logic_vector (SIZE -1 downto 0);
+				Rout	:	out std_logic_vector (SIZE -1	downto 0);
+				setR, clk, reset_n	:	in std_logic
+			);
+	END COMPONENT;
+	
+	COMPONENT mux_16bit_10to1
+		PORT (DIN, R0, R1, R2, R3, R4, R5, R6, R7, G	: IN	STD_LOGIC_VECTOR(15 DOWNTO 0);
+			s : IN STD_LOGIC_VECTOR(3 DOWNTO 0);  
+			M : OUT	STD_LOGIC_VECTOR(15 DOWNTO 0));
+	END COMPONENT;
+	
+	COMPONENT alu
+		PORT ( 	
+			A: IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+			B: IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+			instruction: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+			result: OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+			overFlow: OUT STD_LOGIC
+		);
+	END COMPONENT;
+	
+	---------- DEBUT DES SIGNAUX ------------------
+	SIGNAL REGin: STD_LOGIC_VECTOR(10 DOWNTO 0);
+	
+	SIGNAL IRout: STD_LOGIC_VECTOR(8 DOWNTO 0);
+	SIGNAL R0out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R1out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R2out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R3out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R4out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R5out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R6out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL R7out: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL Aout: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	SIGNAL Gout: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	
+	SIGNAL Gin: STD_LOGIC_VECTOR(15 DOWNTO 0);
+	
+	SIGNAL MUXSelect: STD_LOGIC_VECTOR(3 DOWNTO 0);
+	
+	SIGNAL overFlow: STD_LOGIC;
+	SIGNAL opSelect: STD_LOGIC_VECTOR(1 DOWNTO 0);
+	----------  FIN DES SIGNAUX  ------------------
+	
+	
+	BEGIN 
+	
+		IR: registre
+			GENERIC MAP (9)
+			PORT MAP (DIN(15 DOWNTO 7), IRout, REGin(10), clock, resetn);
+		
+		R0: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R0out, REGin(0), clock, resetn);
+			
+		R1: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R1out, REGin(1), clock, resetn);
+			
+		R2: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R2out, REGin(2), clock, resetn);
+			
+		R3: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R3out, REGin(3), clock, resetn);
+			
+		R4: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R4out, REGin(4), clock, resetn);
+			
+		R5: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R5out, REGin(5), clock, resetn);
+			
+		R6: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R6out, REGin(6), clock, resetn);
+			
+		R7: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, R7out, REGin(7), clock, resetn);
+		
+		A: registre
+			GENERIC MAP (16)
+			PORT MAP (busWires, Aout, REGin(8), clock, resetn);
+		
+		G: registre
+			GENERIC MAP (16)
+			PORT MAP (Gin, Gout, REGin(9), clock, resetn);
+			
+		finalState: fsm PORT MAP (IRout, MUXSelect, opSelect, REGin, clock, resetn, run, DONE);
+		
+		mux: mux_16bit_10to1 PORT MAP (DIN, R0out, R1out, R2out, R3out, R4out, R5out, R6out, R7out, Gout, MUXSelect, busWires);
+		
+		UAL: alu PORT MAP (Aout, busWires, opSelect, Gin, overFlow);
+		
+END Behavior;

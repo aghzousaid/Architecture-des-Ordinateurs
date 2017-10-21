@@ -1,0 +1,26 @@
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+
+ENTITY registernbit IS
+	GENERIC(n : IN integer);
+	port (r	: in std_logic_vector(n-1 downto 0);
+			en, n_reset, clk	: in bit;
+			q	: out std_logic_vector(n-1 downto 0)
+	);
+END;
+
+ARCHITECTURE registernbit_bhv OF registernbit IS
+
+	COMPONENT dlatchnbit
+		GENERIC(n : IN integer := 4);
+		port (d	: in std_logic_vector(n-1 downto 0);
+				en, n_reset, clk	: in bit;
+				q	: out std_logic_vector(n-1 downto 0)
+		);
+	END COMPONENT;
+
+BEGIN
+
+	DLATCH : dlatchnbit generic map (4) PORT MAP (r, en, n_reset, clk, q);
+
+END ARCHITECTURE;

@@ -1,0 +1,17 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY add_1 IS 
+	PORT (
+		A, B, CIN : IN STD_LOGIC;
+		COUT, S : OUT STD_LOGIC
+	);
+END ENTITY;
+
+ARCHITECTURE add_1_bhv OF add_1 IS
+	SIGNAL Z : STD_LOGIC;
+	BEGIN
+		Z <= A XOR B;
+		S <= Z XOR CIN;
+		COUT <= (A AND B) OR (CIN AND Z);
+END ARCHITECTURE;

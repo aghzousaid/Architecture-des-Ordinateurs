@@ -1,0 +1,77 @@
+------------------------------------------------------------
+TimeQuest Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow Model Setup 'KEY[1]'
+Slack : -10.738
+TNS   : -763.581
+
+Type  : Slow Model Setup 'processeur:proc|fsm:finalState|current_state.operation0'
+Slack : -4.213
+TNS   : -20.148
+
+Type  : Slow Model Setup 'processeur:proc|fsm:finalState|current_state.operation2'
+Slack : -3.957
+TNS   : -30.379
+
+Type  : Slow Model Hold 'processeur:proc|fsm:finalState|current_state.operation0'
+Slack : -2.223
+TNS   : -8.103
+
+Type  : Slow Model Hold 'processeur:proc|fsm:finalState|current_state.operation2'
+Slack : -1.364
+TNS   : -9.198
+
+Type  : Slow Model Hold 'KEY[1]'
+Slack : 0.592
+TNS   : 0.000
+
+Type  : Slow Model Minimum Pulse Width 'KEY[1]'
+Slack : -1.222
+TNS   : -174.222
+
+Type  : Slow Model Minimum Pulse Width 'processeur:proc|fsm:finalState|current_state.operation0'
+Slack : 0.500
+TNS   : 0.000
+
+Type  : Slow Model Minimum Pulse Width 'processeur:proc|fsm:finalState|current_state.operation2'
+Slack : 0.500
+TNS   : 0.000
+
+Type  : Fast Model Setup 'KEY[1]'
+Slack : -3.865
+TNS   : -226.017
+
+Type  : Fast Model Setup 'processeur:proc|fsm:finalState|current_state.operation2'
+Slack : -1.558
+TNS   : -11.101
+
+Type  : Fast Model Setup 'processeur:proc|fsm:finalState|current_state.operation0'
+Slack : -1.494
+TNS   : -5.170
+
+Type  : Fast Model Hold 'processeur:proc|fsm:finalState|current_state.operation0'
+Slack : -1.098
+TNS   : -5.311
+
+Type  : Fast Model Hold 'processeur:proc|fsm:finalState|current_state.operation2'
+Slack : -0.619
+TNS   : -4.589
+
+Type  : Fast Model Hold 'KEY[1]'
+Slack : 0.009
+TNS   : 0.000
+
+Type  : Fast Model Minimum Pulse Width 'KEY[1]'
+Slack : -1.222
+TNS   : -174.222
+
+Type  : Fast Model Minimum Pulse Width 'processeur:proc|fsm:finalState|current_state.operation0'
+Slack : 0.500
+TNS   : 0.000
+
+Type  : Fast Model Minimum Pulse Width 'processeur:proc|fsm:finalState|current_state.operation2'
+Slack : 0.500
+TNS   : 0.000
+
+------------------------------------------------------------

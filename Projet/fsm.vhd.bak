@@ -1,0 +1,172 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY fsm is
+	PORT ( 
+		IR : IN STD_LOGIC_VECTOR(8 DOWNTO 0);
+		MUXin : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		operate : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+		sigSet : OUT STD_LOGIC_VECTOR(10 DOWNTO 0);			-- de 0 a 7 les registres Ri, en 8 le registre A, en 9 le registre G en 10 le registre IR 
+		clk, reset_n,	run:	in std_logic;
+		DONE	:	OUT STD_LOGIC
+	);
+END ENTITY;
+
+
+
+ARCHITECTURE Behavior OF fsm IS
+	TYPE state_t is(fetch, operation0, operation1, operation2);
+	SIGNAL current_state, futur_state: state_t;
+	SIGNAL action, RX, RY: STD_LOGIC_VECTOR(2 DOWNTO 0);
+	
+	
+BEGIN
+	p_state: process(current_state, IR, RX, RY)
+	VARIABLE choixReg : INTEGER := 0;
+	VARIABLE i : integer := 0;
+	BEGIN
+		action<= IR(8 DOWNTO 6);
+		RX <= IR(5 DOWNTO 3);
+		RY <= IR(2 DOWNTO 0);
+	
+		case current_state is
+			when fetch=>
+				done <= '0';
+				-- remmetre tous les registres a 0 pour ecriture sauf IR
+				FOR i IN 0 TO 10 LOOP  
+					sigSet(i)<='0';
+				END LOOP;
+				MUXin<= "1000";
+				sigSet(10)<='1';
+				futur_state<=operation0;
+				
+				
+			when operation0=>
+				FOR i IN 0 TO 10 LOOP  					-- remettre tout a 0
+					sigSet(i) <= '0';
+				END LOOP;
+				if(action="000") then		 			-- on fais un move i
+					if(RX="000") then
+						choixReg := 0;
+						else if(RX="001") then
+							choixReg := 1;
+							else if(RX="010") then
+								choixReg := 2;
+								else if(RX="011") then
+									choixReg := 3;
+									else if(RX="100") then
+										choixReg := 4;
+										else if(RX="101") then
+											choixReg := 5;
+											else if(RX="110") then
+												choixReg := 6;
+												else if(RX="111") then
+													choixReg := 7;
+												end if;
+											end if;
+										end if;
+									end if;
+								end if;
+							end if;
+						end if;
+					end if;
+					sigSet(choixReg)<='1';						-- mettre le registre RX a 1
+					MUXin <= "1000";
+					futur_state<=fetch;
+					done<='1';
+				else
+				if(action="001") then 			-- on fais un move
+					if(RY="000") then
+						choixReg := 0;
+						else if(RY="001") then
+							choixReg := 1;
+							else if(RY="010") then
+								choixReg := 2;
+								else if(RY="011") then
+									choixReg := 3;
+									else if(RY="100") then
+										choixReg := 4;
+										else if(RY="101") then
+											choixReg := 5;
+											else if(RY="110") then
+												choixReg := 6;
+												else if(RY="111") then
+													choixReg := 7;
+												end if;
+											end if;
+										end if;
+									end if;
+								end if;
+							end if;
+						end if;
+					end if;
+					sigSet(choixReg)<='1';
+					MUXin<='0'&RX;       	        	-- envoyer RXout au multiplexer
+					futur_state<=fetch;
+					done<='1';
+				else
+				if(action="100") then 					-- on fais une addition
+					done <= '0';
+					sigSet<="00100000000";				-- on met le registre A en ecriture
+					MUXin<='0'&RX;							-- mettre RXout dans le mux
+					operate <= "00";							-- mettre l'operation en addition
+					futur_state<=operation1;
+				else
+				if(action="101") then 					-- on fais une addition
+					sigSet<="00100000000";				-- on met le registre A en ecriture
+					MUXin<='0'&RX;							-- mettre RXout dans le mux
+					operate <= "01";							-- mettre l'operation en soustraction
+					futur_state<=operation1;
+				end if;
+				end if;
+				end if;
+				end if;
+				
+			when operation1=>
+				sigSet<="01000000000";					-- On met Gin a 1
+				MUXin <= '0'&RY;							-- mettre RYout dans le mux
+				futur_state <= operation2;
+
+			when operation2=>
+			sigSet(9)<='0';										-- On met Gin a 0
+				MUXin<="1001";										-- on envoie G au multiplexer
+				if(RX="000") then
+						choixReg := 0;
+						else if(RX="001") then
+							choixReg := 1;
+							else if(RX="010") then
+								choixReg := 2;
+								else if(RX="011") then
+									choixReg := 3;
+									else if(RX="100") then
+										choixReg := 4;
+										else if(RX="101") then
+											choixReg := 5;
+											else if(RX="110") then
+												choixReg := 6;
+												else if(RX="111") then
+													choixReg := 7;
+												end if;
+											end if;
+										end if;
+									end if;
+								end if;
+							end if;
+						end if;
+					end if;
+				futur_state<=fetch;
+				sigSet(choixReg)<='1';
+				done<='1';
+			end case;
+	end process;
+	
+	p_reg	:	process(clk, reset_n, run, futur_state)
+	BEGIN
+		if(reset_n = '1')	then	--reset asynchrone
+			current_state <= fetch;
+		else if(rising_edge(clk) and run = '1') then -- Front montant de l'horloge
+				current_state <= futur_state;
+			end if;
+		end if;
+	END process;
+END Behavior;

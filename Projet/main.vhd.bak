@@ -1,0 +1,47 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY mainCarte is
+	PORT ( 	
+		SW: IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+		KEY: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+		LEDR: OUT STD_LOGIC_VECTOR(17 DOWNTO 0);
+		LEDG: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+		HEX7, HEX6, HEX5, HEX4, HEX3, HEX2, HEX1 , HEX0: out STD_LOGIC_VECTOR(0 to 6))
+	);
+END mainCarte;
+
+ARCHITECTURE Behavior OF mainCarte IS
+	COMPONENT processeur
+		PORT ( 	DIN	:	IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+				resetn, clock, run : IN STD_LOGIC;
+				DONE	:	BUFFER STD_LOGIC;
+				busWires	:	BUFFER STD_LOGIC_VECTOR(15 DOWNTO 0));
+	END COMPONENT;
+	
+	component decodeur
+		port (C : in std_logic_vector(3 downto 0);
+				S: out std_logic_vector(0 to 6));
+	end component;
+	
+	signal result : STD_LOGIC_VECTOR(15 downto 0);
+	
+	BEGIN 
+		LEDR(15 downto 0) <= SW(15 downto 0);
+		
+		inHexa1 : decodeur port map (C => SW(15 downto 12), S => HEX7);
+		inHexa2 : decodeur port map (C => SW(11 downto 8), S => HEX6);
+		inHexa3 : decodeur port map (C => SW(7 downto 4), S => HEX5);
+		inHexa4 : decodeur port map (C => SW(3 downto 0), S => HEX4);
+		
+		
+		proc: processeur PORT MAP (DIN => SW(15 DOWNTO 0), resetn => KEY(0), clock => KEY(1), '1', DONE => LEDR(17), busWires => result);
+		
+		outHexa1 : decodeur port map (C => result(15 downto 12), S => HEX3);
+		outHexa2 : decodeur port map (C => result(11 downto 8), S => HEX2);
+		outHexa1 : decodeur port map (C => result(7 downto 4), S => HEX1);
+		outHexa2 : decodeur port map (C => result(3 downto 0), S => HEX0);
+		
+		
+	
+END Behavior;
